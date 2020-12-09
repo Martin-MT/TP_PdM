@@ -4,7 +4,9 @@
  * Date: 2020/12/08
  *===========================================================================*/
 
-#include "sapi.h"      // <= sAPI
+#include "sapi.h"
+#include "UARTDriver.h"
+#include "leds.h"
 #include "app.h"
 
 int main( void ){
@@ -13,7 +15,7 @@ int main( void ){
 	// Inicializar y configurar la plataforma
 	boardInit();
 
-	//uartConfig( UART_USB, 115200 );
+	uartConfig( UART_USB, 115200 );
 
 	uint8_t data;
 	message_t message;
@@ -26,17 +28,13 @@ int main( void ){
 	while( TRUE ){
 		switch(currentAction){
 			case AwaitingMessage:
-				if(uartReadByte(UART_USB, &data)){
-					 newMessage = addChar(&message,(char)data);
-					 switch(newMessage){
-					 	 case NewMessageReceived:
-					 		//uartWriteString(UART_USB, "Recibido\r\n");
-					 		currentAction = ProcessingRequest;
-					 		break;
-					 	 case MessageLengthExceded:
-					 		uartWriteString(UART_USB, ERROR_MAX_LENGTH_EXCEDED);
-					 		break;
-					 }
+				newMessage = checkForMessages(&message);
+				switch(newMessage){
+					case NewMessageReceived:
+						currentAction = ProcessingRequest;
+						break;
+					case MessageLengthExceded:
+						uartWriteString(UART_USB, ERROR_MAX_LENGTH_EXCEDED);
 				}
 				break;
 			case ProcessingRequest:
@@ -75,29 +73,6 @@ int main( void ){
 	}
 
 	return 0;
-}
-
-newMessage_t addChar(message_t *message, char data){
-	if (message->lastPossition >= MAX_MESSAGE_LENGTH){
-		message->lastPossition = 0;
-		return MessageLengthExceded;
-	}
-	switch(data){
-		case '*':
-			message->lastPossition = 0;
-			message->inputMessageString[message->lastPossition++] = data;
-			return NewCharAdded;
-			break;
-		case '#':
-			message->inputMessageString[message->lastPossition] = data;
-			return NewMessageReceived;
-			break;
-		default:
-			message->inputMessageString[message->lastPossition++] = data;
-			return NewCharAdded;
-			break;
-	}
-	return NewCharAdded;
 }
 
 request_t parceInput(message_t *message){

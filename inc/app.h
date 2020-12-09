@@ -16,18 +16,6 @@ typedef enum{
 	ReportingResults = 4
 }actions_t;
 
-#define MAX_MESSAGE_LENGTH 5
-typedef struct{
-	char inputMessageString[MAX_MESSAGE_LENGTH];
-	uint8_t lastPossition;
-}message_t;
-
-typedef enum{
-	NewMessageReceived = 0,
-	NewCharAdded = 1,
-	MessageLengthExceded = 2
-}newMessage_t;
-
 typedef enum{
 	ErrorWrongMessage = 0,
 	AcquireVibration = 1,
@@ -35,11 +23,10 @@ typedef enum{
 	ErrorWrongPointer = 3
 }request_t;
 
-#define ERROR_MAX_LENGTH_EXCEDED "Excedido\r\n"
+#define ERROR_MAX_LENGTH_EXCEDED "Mensaje excedido en largo\r\n"
 #define ERROR_WRONG_MESSAGE "Mensaje no reconocido\r\n"
 #define ERROR_VIBRATION_INICIALIZATION_FAILED "No se puede conectar con el sensor\r\n"
 
-newMessage_t addChar(message_t *message, char data);
 request_t parceInput(message_t *);
 uint8_t initializeVibration(void);
 void emptyMessage(message_t *);
