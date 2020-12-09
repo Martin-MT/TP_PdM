@@ -8,6 +8,8 @@
 #ifndef MISCODIGOS_UARTDRIVER_H
 #define MISCODIGOS_UARTDRIVER_H
 
+#include "sapi.h"
+
 typedef enum{
 	NewMessageReceived = 0,
 	NewCharAdded = 1,
@@ -24,5 +26,6 @@ typedef struct{
 
 newMessage_t checkForMessages(message_t *);
 newMessage_t addChar(message_t *message, char data);
+void emptyMessage(message_t *);
 
 #endif /* MISCODIGOS_UARTDRIVER_H */

@@ -5,7 +5,6 @@
  *
  */
 
-#include "sapi.h"
 #include "../inc/UARTDriver.h"
 
 
@@ -48,4 +47,8 @@ newMessage_t addChar(message_t *message, char data){
 			break;
 	}
 	return NewCharAdded;
+}
+
+void emptyMessage(message_t * message){
+	message->lastPossition = 0;
 }

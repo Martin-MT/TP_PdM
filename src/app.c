@@ -5,8 +5,6 @@
  *===========================================================================*/
 
 #include "sapi.h"
-#include "UARTDriver.h"
-#include "leds.h"
 #include "app.h"
 
 int main( void ){
@@ -17,7 +15,6 @@ int main( void ){
 
 	uartConfig( UART_USB, 115200 );
 
-	uint8_t data;
 	message_t message;
 	actions_t currentAction;
 	newMessage_t newMessage;
@@ -35,6 +32,7 @@ int main( void ){
 						break;
 					case MessageLengthExceded:
 						uartWriteString(UART_USB, ERROR_MAX_LENGTH_EXCEDED);
+						break;
 				}
 				break;
 			case ProcessingRequest:
@@ -48,7 +46,7 @@ int main( void ){
 						currentAction = AwaitingMessage;
 						break;
 					case AcquireVibration:
-						status = initializeVibration();
+						status = configureVibration();
 						if (0 != status){
 							uartWriteString(UART_USB, ERROR_VIBRATION_INICIALIZATION_FAILED);
 							currentAction = AwaitingMessage;
@@ -59,14 +57,14 @@ int main( void ){
 				}
 				break;
 			case AquiringData:
-				mpu60X0Read();
-				printf( "Acelerometro:   (%f, %f, %f)   [m/s2]\r\n", mpu60X0GetAccelX_mss(), mpu60X0GetAccelY_mss(), mpu60X0GetAccelZ_mss());
+				readVibration();
 				currentAction = ProccesingData;
 				break;
 			case ProccesingData:
 				currentAction = ReportingResults;
 				break;
 			case ReportingResults:
+				printAcceleration();
 				currentAction = AwaitingMessage;
 				break;
 		}
@@ -74,37 +72,4 @@ int main( void ){
 
 	return 0;
 }
-
-request_t parceInput(message_t *message){
-	if (0 == message){
-		return ErrorWrongPointer;
-	}
-	if (('*' != message->inputMessageString[0]) || ('#' != message->inputMessageString[message->lastPossition])){
-		emptyMessage(message);
-		return ErrorWrongMessage;
-	}
-	if ('1' == message->inputMessageString[1]){
-		emptyMessage(message);
-		return AcquireVibration;
-	} else {
-		emptyMessage(message);
-		return ErrorWrongMessage;
-	}
-}
-
-uint8_t initializeVibration(void){
-	uint8_t status;
-	status = mpu60X0Init(0x68);
-	if( status < 0 ){
-		return 1;
-	}
-	return 0;
-}
-
-void emptyMessage(message_t * message){
-	message->lastPossition = 0;
-}
-
-
-
 
